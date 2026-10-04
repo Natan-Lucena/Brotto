@@ -1,0 +1,1810 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Brotto · Mapa de Fluxo</title>
+    <script type="module">
+      import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
+      const dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      mermaid.initialize({ startOnLoad: true, theme: dark ? 'dark' : 'neutral' });
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Nunito:wght@700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500&display=swap"
+    />
+    <style>
+      :root {
+        --primary: #2f6b4f;
+        --secondary: #7fb069;
+        --cta: #f2a541;
+        --cta-soft: #fdf0dc;
+        --primary-soft: #e6f0e9;
+        --success: #4c9f70;
+        --warn: #b7791f;
+        --warn-soft: #fbf1dc;
+        --error: #c55a3a;
+        --error-soft: #f8e4dc;
+        --bg: #fbf7f0;
+        --surface: #ffffff;
+        --text: #2c362f;
+        --muted: #667168;
+        --border: #e8e2d6;
+        --code-bg: #f2efe7;
+        --shadow: 0 4px 16px rgba(47, 107, 79, 0.08);
+      }
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme='light']) {
+          color-scheme: dark;
+          --primary: #8fd0ac;
+          --secondary: #9cc98a;
+          --cta: #f2a541;
+          --cta-soft: #3a3020;
+          --primary-soft: #24362c;
+          --success: #6cc093;
+          --warn: #f2c14e;
+          --warn-soft: #3a3220;
+          --error: #ee9072;
+          --error-soft: #3d2620;
+          --bg: #16201b;
+          --surface: #1f2b25;
+          --text: #eef2ec;
+          --muted: #a3b0a7;
+          --border: #304137;
+          --code-bg: #1a2520;
+          --shadow: none;
+        }
+      }
+      :root[data-theme='dark'] {
+        color-scheme: dark;
+        --primary: #8fd0ac;
+        --secondary: #9cc98a;
+        --cta: #f2a541;
+        --cta-soft: #3a3020;
+        --primary-soft: #24362c;
+        --success: #6cc093;
+        --warn: #f2c14e;
+        --warn-soft: #3a3220;
+        --error: #ee9072;
+        --error-soft: #3d2620;
+        --bg: #16201b;
+        --surface: #1f2b25;
+        --text: #eef2ec;
+        --muted: #a3b0a7;
+        --border: #304137;
+        --code-bg: #1a2520;
+        --shadow: none;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font:
+          15px/1.6 'Inter',
+          system-ui,
+          sans-serif;
+        padding-inline: 20px;
+      }
+      .wrap {
+        max-width: 1120px;
+        margin: 0 auto;
+        padding-block: 40px 80px;
+        display: grid;
+        grid-template-columns: 200px 1fr;
+        gap: 48px;
+      }
+      nav {
+        position: sticky;
+        top: calc(env(safe-area-inset-top, 0px) + 24px);
+        align-self: start;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        font-size: 13px;
+      }
+      nav a {
+        color: var(--muted);
+        text-decoration: none;
+        padding: 5px 10px;
+        border-radius: 8px;
+      }
+      nav a:hover,
+      nav a:focus-visible {
+        background: var(--primary-soft);
+        color: var(--primary);
+        outline: none;
+      }
+      nav .nav-label {
+        font-size: 11px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        font-weight: 600;
+        color: var(--primary);
+        padding: 14px 10px 4px;
+      }
+      main {
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 56px;
+      }
+      h1,
+      h2,
+      h3 {
+        font-family: 'Nunito', system-ui, sans-serif;
+        color: var(--primary);
+        margin: 0;
+        text-wrap: balance;
+      }
+      h1 {
+        font-size: 40px;
+        line-height: 1.1;
+        font-weight: 800;
+        letter-spacing: -0.5px;
+      }
+      h2 {
+        font-size: 26px;
+        line-height: 1.2;
+        font-weight: 800;
+      }
+      h3 {
+        font-size: 18px;
+        line-height: 1.3;
+        font-weight: 700;
+      }
+      p {
+        margin: 0;
+        max-width: 68ch;
+      }
+      .eyebrow {
+        font-size: 11px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        font-weight: 600;
+        color: var(--primary);
+      }
+      .muted {
+        color: var(--muted);
+      }
+      code,
+      .mono {
+        font-family: 'JetBrains Mono', ui-monospace, monospace;
+        font-size: 12.5px;
+      }
+      code {
+        background: var(--code-bg);
+        padding: 1px 6px;
+        border-radius: 5px;
+      }
+      section {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+        scroll-margin-top: 24px;
+      }
+      header.hero {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+      .facts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 6px;
+      }
+      .fact {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 10px 14px;
+        display: flex;
+        flex-direction: column;
+        min-width: 130px;
+      }
+      .fact strong {
+        font:
+          800 22px/1.2 'Nunito',
+          sans-serif;
+        color: var(--primary);
+        font-variant-numeric: tabular-nums;
+      }
+      .fact span {
+        font-size: 12px;
+        color: var(--muted);
+      }
+      .note {
+        background: var(--warn-soft);
+        border-radius: 14px;
+        padding: 12px 16px;
+        font-size: 14px;
+      }
+      .diagram {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 20px;
+        overflow-x: auto;
+      }
+      .diagram pre {
+        margin: 0;
+      }
+      .legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 14px;
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 2px 9px;
+        border-radius: 99px;
+        white-space: nowrap;
+      }
+      .pill.ok {
+        background: var(--primary-soft);
+        color: var(--primary);
+      }
+      .pill.part {
+        background: var(--warn-soft);
+        color: var(--warn);
+      }
+      .pill.miss {
+        background: var(--error-soft);
+        color: var(--error);
+      }
+      .screens {
+        display: grid;
+        gap: 14px;
+      }
+      .screen {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 18px 20px;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+        gap: 8px 28px;
+        box-shadow: var(--shadow);
+      }
+      .screen-head {
+        grid-column: 1/-1;
+        display: flex;
+        align-items: baseline;
+        gap: 12px;
+        flex-wrap: wrap;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 4px;
+      }
+      .screen-head .step {
+        font:
+          800 13px 'Nunito',
+          sans-serif;
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+        min-width: 26px;
+      }
+      .screen-head code {
+        margin-left: auto;
+      }
+      .col {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        font-size: 14px;
+      }
+      .col .lbl {
+        font-size: 11px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        font-weight: 600;
+        color: var(--muted);
+      }
+      ul {
+        margin: 0;
+        padding-left: 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+      }
+      li::marker {
+        color: var(--secondary);
+      }
+      .goes {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+      }
+      .goes div {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+      }
+      .goes .arrow {
+        color: var(--cta);
+        font-weight: 700;
+      }
+      .states {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .states div {
+        display: flex;
+        gap: 8px;
+        align-items: baseline;
+      }
+      .tablewrap {
+        overflow-x: auto;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 13.5px;
+        min-width: 620px;
+      }
+      th,
+      td {
+        text-align: left;
+        padding: 10px 14px;
+        border-bottom: 1px solid var(--border);
+        vertical-align: top;
+      }
+      th {
+        font-size: 11px;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        color: var(--muted);
+        font-weight: 600;
+        background: var(--code-bg);
+      }
+      tr:last-child td {
+        border-bottom: 0;
+      }
+      .gaps {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 14px;
+      }
+      .gap {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .gap h3 {
+        font-size: 16px;
+      }
+      .gap li {
+        font-size: 13.5px;
+      }
+      .bug {
+        border-left: 3px solid var(--error);
+      }
+      .twocol {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+      }
+      .box {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px 18px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+      .box li {
+        font-size: 14px;
+      }
+      @media (max-width: 860px) {
+        .wrap {
+          grid-template-columns: 1fr;
+          gap: 24px;
+        }
+        nav {
+          position: static;
+          flex-direction: row;
+          flex-wrap: wrap;
+        }
+        nav .nav-label {
+          display: none;
+        }
+        .screen,
+        .twocol {
+          grid-template-columns: 1fr;
+        }
+        h1 {
+          font-size: 32px;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          scroll-behavior: auto !important;
+        }
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <nav aria-label="Seções">
+        <span class="nav-label">Visão geral</span>
+        <a href="#resumo">Resumo</a>
+        <a href="#mapa">Mapa de fluxo</a>
+        <span class="nav-label">Telas</span>
+        <a href="#onboarding">Onboarding</a>
+        <a href="#app">App (5 abas)</a>
+        <a href="#secundarios">Fluxos secundários</a>
+        <a href="#demo">Painel de demo</a>
+        <span class="nav-label">Implementação</span>
+        <a href="#estado">Modelo de estado</a>
+        <a href="#regras">Regras de negócio</a>
+        <a href="#gaps">Spec × protótipo</a>
+        <a href="#nativo">Fora do protótipo</a>
+      </nav>
+
+      <main>
+        <header class="hero" id="resumo">
+          <span class="eyebrow">Figma Make · 8TBAmKMgwqfV2x8R9fPeNg</span>
+          <h1>Brotto: mapa de fluxo para implementação</h1>
+          <p>
+            App de bloqueio de apps e foco digital para brasileiros de 16 a 35 anos. Uma
+            planta (o Brotto) cresce conforme o usuário mantém o streak. Este mapa foi
+            montado a partir do código do protótipo (<code>src/App.tsx</code>,
+            <code>src/index.css</code>) e da especificação que o gerou
+            (<code>src/imports/brotto-prompt-figma-make.md</code>).
+          </p>
+          <div class="facts">
+            <div class="fact"><strong>11</strong><span>telas de onboarding</span></div>
+            <div class="fact"><strong>5</strong><span>abas no app</span></div>
+            <div class="fact"><strong>4</strong><span>fluxos secundários</span></div>
+            <div class="fact">
+              <strong>6 × 7</strong><span>estágios × humores do Brotto</span>
+            </div>
+            <div class="fact">
+              <strong>1</strong><span>componente React, só estado local</span>
+            </div>
+          </div>
+          <p class="note">
+            O arquivo no Figma se chama "Enviar documentos para revisão", mas o conteúdo
+            é inteiro do Brotto. Vale renomear para não confundir o time.
+          </p>
+        </header>
+
+        <section id="mapa">
+          <span class="eyebrow">Navegação</span>
+          <h2>Mapa de fluxo</h2>
+          <p class="muted">
+            O onboarding é linear e tem voltar em todas as telas a partir do quiz. O
+            paywall só aparece depois de Impacto, Prova social e Permissões. No app, a
+            tab bar dá acesso livre às 5 abas, e os fluxos secundários abrem por cima em
+            tela cheia.
+          </p>
+          <div class="diagram">
+            <pre class="mermaid">
+flowchart LR
+  subgraph ONB[Onboarding · funil de conversão]
+    direction TB
+    S[Splash<br/>1,5s automático] --> W[Boas-vindas]
+    W --> Q[Quiz P1–P5]
+    Q --> C[Calculando<br/>1,5s]
+    C --> I[Impacto]
+    I --> T[Conheça seu Brotto]
+    T --> SO[Prova social]
+    SO --> P[Permissões]
+    P -->|Permitir / Ativar depois /<br/>Continuar mesmo assim| PW[Paywall]
+    PW -->|assinar| SU[Setup pós-compra]
+  end
+  S -.->|já é assinante| HOME
+  PW -.->|X fechar| HOME
+  SU --> HOME
+  subgraph APP[App · tab bar]
+    direction TB
+    HOME[Início] --- BL[Bloqueios]
+    HOME --- FO((Foco))
+    HOME --- AG[Agenda]
+    HOME --- VO[Você]
+  end
+  FO -->|timer chega a 0| PF[Pós-foco]
+  PF -.->|mudou de estágio · só na spec| CE[Celebração]
+  BLK[Tela de bloqueio<br/>ao abrir app bloqueado] -->|Voltar pro foco| FO
+  BR[Streak quebrado] -->|Bora regar hoje?| FO
+  CE --> HOME
+</pre>
+          </div>
+          <div class="legend">
+            <span>Linha contínua: navegação implementada</span
+            ><span>Tracejada: atalho, condição ou algo que só existe na spec</span>
+          </div>
+        </section>
+
+        <section id="onboarding">
+          <span class="eyebrow">Fluxo 1</span>
+          <h2>Onboarding, tela por tela</h2>
+          <p class="muted">
+            Em cada tela aparece a chave usada no código (<code>screen</code>), para
+            onde cada ação leva e quais estados existem.
+            <span class="pill ok">protótipo</span> = implementado;
+            <span class="pill part">parcial</span> = existe mas incompleto;
+            <span class="pill miss">só spec</span> = descrito na spec e ausente no
+            protótipo.
+          </p>
+
+          <div class="screens">
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">01</span>
+                <h3>Splash</h3>
+                <code>splash</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>Brotto stage 0, humor feliz, tamanho lg</li>
+                  <li>Logo "brotto" (Nunito 800, 40px)</li>
+                  <li>"Seu foco. Seu tempo. Sua planta."</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div><span class="arrow">→</span>Boas-vindas depois de 1,5s</div>
+                  <div>
+                    <span class="arrow">→</span>Início, se a flag de assinante estiver
+                    ligada
+                  </div>
+                  <div>
+                    <span class="arrow">→</span>Duplo clique no logo abre o painel de
+                    demo
+                  </div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill miss">só spec</span>Animação do broto nascendo
+                    (800ms)
+                  </div>
+                  <div>
+                    <span class="pill part">parcial</span>Spec pede toque longo no logo;
+                    protótipo usa duplo clique
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">02</span>
+                <h3>Boas-vindas</h3>
+                <code>welcome</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>Brotto stage 0, feliz, lg</li>
+                  <li>"Menos scroll. Mais você."</li>
+                  <li>Texto de proposta de valor "sem culpa"</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div><span class="arrow">→</span>"Começar" abre o Quiz na P1</div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill ok">protótipo</span>Não tem opção de pular
+                    (proposital)
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">03</span>
+                <h3>Quiz P1–P5</h3>
+                <code>quiz · quizStep 0–4</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Perguntas</span>
+                <ul>
+                  <li>
+                    <b>P1</b>, única: tempo diário no celular (Menos de 1h · 1 a 3h · 3
+                    a 5h · 5h ou mais). Alimenta o cálculo do Impacto.
+                  </li>
+                  <li>
+                    <b>P2</b>, múltipla em chips: apps que mais pegam. Pode pular;
+                    Continuar fica habilitado com 0.
+                  </li>
+                  <li>
+                    <b>P3</b>, única: objetivo (Estudar · Trabalhar · Dormir · Tempo
+                    livre). Define a frase do Impacto.
+                  </li>
+                  <li><b>P4</b>, única: período em que mais perde tempo.</li>
+                  <li><b>P5</b>, única: quanto quer recuperar.</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div>
+                    <span class="arrow">→</span>Continuar leva à próxima pergunta;
+                    depois da P5, vai para Calculando
+                  </div>
+                  <div>
+                    <span class="arrow">←</span>Voltar leva à pergunta anterior; na P1,
+                    volta para Boas-vindas
+                  </div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill ok">protótipo</span>ProgressLeaves com 5 folhas;
+                    Continuar desabilitado sem resposta, com a microcopy "Escolhe uma
+                    pra eu te conhecer"
+                  </div>
+                  <div>
+                    <span class="pill ok">protótipo</span>Contador "Selecionados: N" e
+                    link "Pular essa" na P2
+                  </div>
+                  <div>
+                    <span class="pill part">parcial</span>P4 e P5 são coletadas mas não
+                    usadas em nenhuma tela
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">04</span>
+                <h3>Calculando</h3>
+                <code>calculating</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>Brotto stage 0 com spinner</li>
+                  <li>"Calculando seu tempo..."</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div><span class="arrow">→</span>Impacto depois de 1,5s</div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">05</span>
+                <h3>Impacto</h3>
+                <code>impact</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>StatCard "~N dias por ano"</li>
+                  <li>
+                    N = horas da P1 × 365 ÷ 24, arredondado (0,75 · 2 · 4 · 6 → 11 · 30
+                    · 61 · 91 dias); o padrão, sem resposta, é 4h
+                  </li>
+                  <li>Frase de ganho conforme a P3</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div>
+                    <span class="arrow">→</span>"Quero recuperar meu tempo" abre Conheça
+                    seu Brotto
+                  </div>
+                  <div><span class="arrow">←</span>Voltar retorna à P5</div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill miss">só spec</span>Contagem animada de 0 até o
+                    valor em 1,2s
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">06</span>
+                <h3>Conheça seu Brotto</h3>
+                <code>plant-tour</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>
+                    Carrossel com 5 fases: Semente (Dia 1, stage 0) · Muda (7 dias,
+                    stage 2) · Planta (30, stage 3) · Flores (60, stage 4) · Árvore
+                    (100, stage 5)
+                  </li>
+                  <li>Dots de paginação</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div>
+                    <span class="arrow">→</span>"Cuidar do meu Brotto" abre Prova social
+                  </div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill part">parcial</span>Navegação por setas e dots; a
+                    spec pede swipe
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">07</span>
+                <h3>Prova social</h3>
+                <code>social</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>5 estrelas com "[nota] na App Store"</li>
+                  <li>
+                    3 depoimentos placeholder: "[Nome], [idade]" e "[Depoimento real de
+                    usuário aqui]"
+                  </li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div>
+                    <span class="arrow">→</span>"Começar meu foco" abre Permissões
+                  </div>
+                </div>
+                <span class="lbl">Pendência</span>
+                <div class="states">
+                  <div>
+                    <span class="pill part">conteúdo</span>Precisa de nota e depoimentos
+                    reais antes de lançar; a spec proíbe inventar
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">08</span>
+                <h3>Permissões</h3>
+                <code>permissions</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>
+                    A copy muda por plataforma. iOS: "Deixa eu bloquear por você" (Tempo
+                    de Uso). Android: "Só mais um passo" (Acesso de uso +
+                    Acessibilidade).
+                  </li>
+                  <li>
+                    3 benefícios com check e card "Seus dados ficam no seu aparelho"
+                  </li>
+                  <li>Mock do diálogo nativo</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div>
+                    <span class="arrow">→</span>Permitir, depois Continuar no diálogo:
+                    Paywall
+                  </div>
+                  <div>
+                    <span class="arrow">→</span>Não permitir: mostra o estado negado
+                  </div>
+                  <div>
+                    <span class="arrow">→</span>"Continuar mesmo assim" ou "Ativar
+                    depois": Paywall
+                  </div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill ok">protótipo</span>Negada: card de alerta e botão
+                    "Tentar novamente"
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Concedida: check animado e
+                    avanço em 800ms
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Link "Por que preciso disso?"
+                    que expande explicação
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Android parcial: passo 2/2
+                    para a Acessibilidade
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">09</span>
+                <h3>Paywall</h3>
+                <code>paywall</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>Comparação "Sem o Brotto" (murcho) × "Com o Brotto" (stage 4)</li>
+                  <li>4 benefícios</li>
+                  <li>
+                    Planos: Semanal R$ 9,90 · Mensal R$ 19,90 · <b>Anual R$ 99,90</b> (≈
+                    R$ 8,32/mês, badge MELHOR PREÇO, pré-selecionado)
+                  </li>
+                  <li>Toggle de 3 dias grátis, só no anual e ligado por padrão</li>
+                  <li>CTA muda conforme plano e trial</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div>
+                    <span class="arrow">→</span>CTA mostra "Preparando..." por 1,5s e
+                    vai para o Setup
+                  </div>
+                  <div>
+                    <span class="arrow">→</span>X leva ao Início com o toast "Escolha um
+                    plano para liberar todos os recursos."
+                  </div>
+                  <div>
+                    <span class="arrow">→</span>Restaurar mostra o toast "Não
+                    encontramos uma compra ativa…"
+                  </div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill part">parcial</span>Fechar deveria abrir uma
+                    versão limitada que volta ao paywall ao usar qualquer feature; no
+                    protótipo, libera tudo
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Erro de pagamento (toast) e
+                    restauração com sucesso
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Rodapé "Pagamento pela App
+                    Store ou Google Play"
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">10</span>
+                <h3>Setup pós-compra</h3>
+                <code>setup</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>"Seu Brotto nasceu! 🌱"</li>
+                  <li>Lista com os 6 primeiros apps instalados e um toggle em cada</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div>
+                    <span class="arrow">→</span>"Bloquear e começar" liga o bloqueio,
+                    mostra o toast "Brotto de guarda agora 🌱" e abre o Início
+                  </div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill miss">só spec</span>Pré-marcar os apps escolhidos
+                    na P2 (ou TikTok e Instagram se nenhum). O protótipo usa uma lista
+                    fixa.
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Confete e erro "Não consegui
+                    ativar o bloqueio agora…"
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="app">
+          <span class="eyebrow">Fluxo 2</span>
+          <h2>App: as 5 abas</h2>
+          <p class="muted">
+            Tab bar: Início (casa) · Bloqueios (escudo) · <b>Foco</b> (botão central
+            elevado em âmbar) · Agenda (calendário) · Você (pessoa). A troca de aba usa
+            fade. Existe uma única lista de apps bloqueados (<code>blockedApps</code>),
+            compartilhada entre Bloqueios, Foco e Agenda.
+          </p>
+
+          <div class="screens">
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">A1</span>
+                <h3>Início</h3>
+                <code>tab: home</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>Saudação por horário: "Bom dia/Boa tarde/Boa noite, Ana"</li>
+                  <li>Brotto lg no estágio atual, com respiração em loop</li>
+                  <li>Legendas "12 dias regando" e "8h 40min recuperados"</li>
+                  <li>Card META DE HOJE com WaterBar (1h de 2h)</li>
+                  <li>Card "Bora focar?" com o botão Iniciar Foco</li>
+                  <li>Botão "Bloquear agora", que vira "Bloqueio ativo · Desativar"</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div>
+                    <span class="arrow">→</span>Iniciar Foco abre a aba Foco em Pomodoro
+                  </div>
+                  <div>
+                    <span class="arrow">→</span>Bloquear agora alterna
+                    <code>blockActive</code> e mostra toast
+                  </div>
+                  <div>
+                    <span class="arrow">→</span>Banner "Regar agora" abre a aba Foco
+                  </div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill ok">protótipo</span>Murcho (streak 0): banner e
+                    humor murcho
+                  </div>
+                  <div><span class="pill ok">protótipo</span>Carregando: skeleton</div>
+                  <div>
+                    <span class="pill miss">só spec</span>Dia 1: legendas zeradas e "Dá
+                    o primeiro passo hoje"
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Meta cumprida: humor regado,
+                    barra cheia, confete
+                  </div>
+                  <div>
+                    <span class="pill part">parcial</span>WaterBar fixa em 50% e números
+                    fixos
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">A2</span>
+                <h3>Bloqueios</h3>
+                <code>tab: blocks</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>
+                    Card de status com toggle geral: "Bloqueio ativo" ou "pausado"
+                  </li>
+                  <li>Busca e chips de categoria</li>
+                  <li>Lista de AppRows com toggle</li>
+                  <li>
+                    Botão "+" que abre o sheet "Adicionar apps" (12 apps instalados)
+                  </li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div>
+                    <span class="arrow">→</span>Salvar no sheet mostra o toast "Lista
+                    salva. O Brotto cuida disso."
+                  </div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill ok">protótipo</span>Vazio: Brotto esperando e
+                    botão Adicionar
+                  </div>
+                  <div>
+                    <span class="pill part">parcial</span>Desligar o toggle de um app
+                    remove o app da lista; não existe estado "na lista mas desligado"
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Busca e filtros funcionando,
+                    chip "Entretenimento", aba Sites com campo de URL
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Chip "Bloqueando agora",
+                    banner de permissão revogada, erro ao salvar
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">A3</span>
+                <h3>Foco: configuração</h3>
+                <code>tab: focus · focusRunning=false</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>Segmented: Foco livre | Pomodoro (padrão)</li>
+                  <li>
+                    Pomodoro: Foco 25 min (5 a 90, passo 5) · Pausa 5 (1 a 30) · Ciclos
+                    4 (1 a 8)
+                  </li>
+                  <li>Foco livre: Duração (15 a 240, passo 15)</li>
+                  <li>Chips com os apps da sessão e link Editar, que abre um sheet</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div>
+                    <span class="arrow">→</span>"Iniciar Foco · N min" começa a sessão
+                  </div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill part">parcial</span>Foco livre deveria começar em
+                    45 min; o protótipo usa o mesmo valor do Pomodoro
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Spinner "ativando bloqueio"
+                    (800ms) e toast de erro
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">A4</span>
+                <h3>Foco: sessão em andamento</h3>
+                <code>tab: focus · focusRunning=true</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>Anel de progresso (conic-gradient) com o tempo no centro</li>
+                  <li>Brotto concentrado; quando pausado, esperando</li>
+                  <li>"FOCO 1/{ciclos}" · "A distração pode esperar."</li>
+                  <li>Pausar/Continuar · +5 min · Encerrar</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div><span class="arrow">→</span>Timer chega a 0: Pós-foco</div>
+                  <div>
+                    <span class="arrow">→</span>Encerrar abre sheet "Tem certeza?" com
+                    "Continuar focado" ou "Encerrar mesmo assim" (volta para a
+                    configuração)
+                  </div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill miss">só spec</span>Fase de pausa do Pomodoro
+                    ("Pausa de 5 min. Respira 🌿") e avanço de ciclos; o contador fica
+                    sempre em 1
+                  </div>
+                  <div>
+                    <span class="pill part">parcial</span>O rótulo mostra "FOCO 1/4" até
+                    no Foco livre
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">A5</span>
+                <h3>Agenda</h3>
+                <code>tab: schedule</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>
+                    ScheduleCards com nome, dias, horário, até 4 ícones de app e toggle
+                  </li>
+                  <li>
+                    3 mocks: Hora de estudar (ativo) · Dormir cedo (ativo) · Fim de
+                    semana leve (inativo)
+                  </li>
+                  <li>
+                    Sheet "Novo agendamento": nome, apps, Das/Até, dias S T Q Q S S D,
+                    dica
+                  </li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div>
+                    <span class="arrow">→</span>Salvar mostra o toast "Agendado. O
+                    Brotto cuida disso."
+                  </div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill ok">protótipo</span>Vazio: Brotto esperando e
+                    "Novo agendamento"
+                  </div>
+                  <div>
+                    <span class="pill part">parcial</span>Horário, dias e apps do sheet
+                    são ignorados: tudo é salvo como "Seg a Sex · 08:00–18:00"
+                  </div>
+                  <div>
+                    <span class="pill part">parcial</span>Todo agendamento mostra a
+                    lista global de apps, sem lista própria
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Botão "Usar sugestão",
+                    indicador "+N" nos ícones
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">A6</span>
+                <h3>Você</h3>
+                <code>tab: you · profileTab</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Crescimento</span>
+                <ul>
+                  <li>Brotto e "12 dias regando" · "Maior sequência: 18 dias"</li>
+                  <li>Segmented Semana | Mês | Tudo</li>
+                  <li>
+                    TEMPO RECUPERADO 8h 40min e grade 2×2 (Sessões 14 · Horas de foco
+                    11h · Dias regados 12 · Média 43min)
+                  </li>
+                  <li>Gráfico dos últimos 7 dias</li>
+                  <li>Lista "Recuperado por app"</li>
+                </ul>
+                <span class="lbl">Configurações</span>
+                <ul>
+                  <li>
+                    Conta (Ana, ana@email.com) · Permissões · Lembrete de regar 09:00 ·
+                    Avisos de marcos e de sequência
+                  </li>
+                  <li>Aparência Claro | Escuro</li>
+                  <li>
+                    Card da assinatura (Plano Anual, ativo até 12/05/2027) · links
+                  </li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill part">parcial</span>Gráfico de barras; a spec pede
+                    linha suave com área em gradiente e uma fileira de mini-folhas por
+                    dia
+                  </div>
+                  <div>
+                    <span class="pill part">parcial</span>O segmented de período não
+                    muda os dados
+                  </div>
+                  <div>
+                    <span class="pill part">parcial</span>O tema escuro vale só dentro
+                    da aba Você
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Estado vazio, "Ajustar
+                    permissões", seletor de horário, "Trocar plano", "Restaurar compra"
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Assinatura inativa: card
+                    "Volte a cuidar do seu Brotto" que leva ao Paywall
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section id="secundarios">
+          <span class="eyebrow">Fluxo 3</span>
+          <h2>Fluxos secundários</h2>
+          <p class="muted">
+            Telas cheias fora da tab bar. No protótipo, só abrem pelo painel de demo
+            (menos o Pós-foco). Na implementação, cada uma precisa de um gatilho real.
+          </p>
+          <div class="screens">
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">S1</span>
+                <h3>Tela de bloqueio</h3>
+                <code>blocked</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>Ícone do app bloqueado, Brotto de guarda lg</li>
+                  <li>"A gente combinou, né? 🌿" · "Essa distração pode esperar."</li>
+                  <li>Status "Faltam 12 min pra terminar essa sessão"</li>
+                  <li>"Se continuar, seu Brotto chega a 7 dias."</li>
+                </ul>
+                <span class="lbl">Gatilho real</span>
+                <p>
+                  O usuário abre um app bloqueado. No iOS é a Shield do ManagedSettings;
+                  no Android, um overlay via AccessibilityService.
+                </p>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div>
+                    <span class="arrow">→</span>"Voltar pro foco" abre a aba Foco
+                  </div>
+                  <div>
+                    <span class="arrow">→</span>"Liberar por hoje" abre o sheet "Respira
+                    um segundo", com "Voltar pro foco" ou "Liberar mesmo assim" (toast
+                    "TikTok liberado até meia-noite.")
+                  </div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill miss">só spec</span>Variante de agendamento:
+                    "Bloqueado até 18:00"
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Depois de 2 aberturas do
+                    modal, o link cai para 50% de opacidade
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">S2</span>
+                <h3>Pós-foco</h3>
+                <code>post-focus</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>Brotto regado com gotinhas</li>
+                  <li>"Foco concluído! +25 min pra você."</li>
+                  <li>StatCard TEMPO RECUPERADO HOJE</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div>
+                    <span class="arrow">→</span>"Iniciar outra sessão" abre a aba Foco
+                  </div>
+                  <div>
+                    <span class="arrow">→</span>"Ver meu crescimento" abre a aba Você
+                  </div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill part">parcial</span>"+25 min" e "1h 25min" são
+                    fixos, independentes da sessão real
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Meta cumprida: "Hoje você
+                    regou o Brotto!", soma no streak e abre a Celebração se o estágio
+                    mudar
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">S3</span>
+                <h3>Celebração de estágio</h3>
+                <code>celebration</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Marcos</span>
+                <ul>
+                  <li>7 dias: "Virou muda! 🌱"</li>
+                  <li>30 dias: "Tá virando planta! 🌿"</li>
+                  <li>60 dias: "Floresceu! 🌸"</li>
+                  <li>100 dias: "Seu Brotto virou árvore! 🌳"</li>
+                </ul>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div><span class="arrow">→</span>Continuar abre o Início</div>
+                  <div>
+                    <span class="arrow">→</span>Compartilhar mostra o toast "Card
+                    criado: Meu Brotto tem N dias 🌱"
+                  </div>
+                </div>
+                <span class="lbl">Estados</span>
+                <div class="states">
+                  <div>
+                    <span class="pill part">parcial</span>Só o marco de 100 dias tem
+                    texto de corpo próprio; os outros usam um texto genérico
+                  </div>
+                  <div>
+                    <span class="pill miss">só spec</span>Morph de estágio em 1,2s,
+                    confete, haptic e card quadrado para compartilhar
+                  </div>
+                </div>
+              </div>
+            </article>
+
+            <article class="screen">
+              <div class="screen-head">
+                <span class="step">S4</span>
+                <h3>Streak quebrado</h3>
+                <code>broken</code>
+              </div>
+              <div class="col">
+                <span class="lbl">Conteúdo</span>
+                <ul>
+                  <li>Brotto murcho, sem perder o estágio</li>
+                  <li>"Todo mundo tem dia difícil. O que importa é voltar."</li>
+                </ul>
+                <span class="lbl">Gatilho real</span>
+                <p>
+                  Primeira abertura do app no dia seguinte a um dia sem cumprir a meta.
+                </p>
+              </div>
+              <div class="col">
+                <span class="lbl">Saídas</span>
+                <div class="goes">
+                  <div>
+                    <span class="arrow">→</span>"Bora regar hoje?" abre a aba Foco
+                  </div>
+                  <div>
+                    <span class="arrow">→</span>"Ver como estava" mostra o toast "Você
+                    chegou a 12 dias…"
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <div class="box">
+            <h3>Notificações push de reengajamento</h3>
+            <div class="tablewrap" style="border: 0">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Gatilho</th>
+                    <th>Texto</th>
+                    <th>Destino ao tocar</th>
+                    <th>Protótipo</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>Lembrete diário, no horário escolhido</td>
+                    <td>"Seu Brotto tá com sede. Bora focar 25 min hoje?"</td>
+                    <td>Foco</td>
+                    <td><span class="pill part">só banner</span></td>
+                  </tr>
+                  <tr>
+                    <td>Dia seguinte a um dia sem meta</td>
+                    <td>"Todo mundo tem dia difícil. Bora regar hoje?"</td>
+                    <td>Início</td>
+                    <td><span class="pill part">só banner</span></td>
+                  </tr>
+                  <tr>
+                    <td>Marco atingido com o app fechado</td>
+                    <td>"Seu Brotto floresceu! 🌸 Vem ver."</td>
+                    <td>Celebração</td>
+                    <td><span class="pill part">só banner</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <section id="demo">
+          <span class="eyebrow">Apoio</span>
+          <h2>Painel de demonstração</h2>
+          <p>
+            Abre pelo botão de engrenagem no canto inferior esquerdo ou com duplo clique
+            no logo do Splash. Serve para apresentar o protótipo e não deve ir para
+            produção, mas a lista abaixo é um bom checklist de QA.
+          </p>
+          <div class="twocol">
+            <div class="box">
+              <h3>O que o protótipo tem</h3>
+              <ul>
+                <li>Pular para 13 telas</li>
+                <li>Streak em 0, 1, 7, 30, 60 ou 100, o que muda o estágio</li>
+                <li>Seletor de humor</li>
+                <li>
+                  Toggles: plataforma iOS/Android, estado vazio, carregando, timer
+                  acelerado (1s = 1min), já é assinante
+                </li>
+                <li>Simular abrir TikTok e disparar os 3 pushes</li>
+                <li>Resetar protótipo</li>
+              </ul>
+            </div>
+            <div class="box">
+              <h3>O que a spec pede e falta</h3>
+              <ul>
+                <li>Toggles "Streak quebrado" e "Meta cumprida hoje"</li>
+                <li>Simular erro de pagamento e permissão negada</li>
+                <li>
+                  Atalhos para Splash, Conheça seu Brotto, Prova social, Permissões e
+                  Setup
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="estado">
+          <span class="eyebrow">Implementação</span>
+          <h2>Modelo de estado</h2>
+          <p class="muted">
+            O protótipo guarda tudo em cerca de 40 <code>useState</code> dentro de um
+            único componente. Abaixo, esse estado reagrupado nas entidades que a
+            implementação vai precisar persistir.
+          </p>
+          <div class="tablewrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Entidade</th>
+                  <th>Campos</th>
+                  <th>Origem no protótipo</th>
+                  <th>Persistência sugerida</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><b>OnboardingAnswers</b></td>
+                  <td>dailyUsage, distractingApps[], goal, worstTime, recoverTarget</td>
+                  <td><code>answers: string[][]</code></td>
+                  <td>Local e analytics do funil</td>
+                </tr>
+                <tr>
+                  <td><b>Subscription</b></td>
+                  <td>plan (weekly · monthly · annual), trial, status, expiresAt</td>
+                  <td>
+                    <code>plan</code>, <code>trial</code>, <code>subscriber</code>
+                  </td>
+                  <td>Loja (StoreKit / Play Billing); cache local</td>
+                </tr>
+                <tr>
+                  <td><b>Permissions</b></td>
+                  <td>
+                    screenTime / usageAccess / accessibility: granted · denied · partial
+                  </td>
+                  <td><code>permissionDenied</code>, <code>platform</code></td>
+                  <td>Consultar o SO sempre; não confiar em cache</td>
+                </tr>
+                <tr>
+                  <td><b>BlockList</b> (única)</td>
+                  <td>apps[] (id, nome, categoria), sites[], active</td>
+                  <td><code>blockedApps</code>, <code>blockActive</code></td>
+                  <td>
+                    Local. No iOS, os apps são tokens opacos do FamilyActivityPicker.
+                  </td>
+                </tr>
+                <tr>
+                  <td><b>Schedule</b></td>
+                  <td>name, apps[], start, end, weekdays[], active</td>
+                  <td><code>schedules[]</code></td>
+                  <td>Local, registrado como DeviceActivitySchedule ou AlarmManager</td>
+                </tr>
+                <tr>
+                  <td><b>FocusSession</b></td>
+                  <td>
+                    mode, focusMin, breakMin, cycles, currentCycle, phase (focus ·
+                    break), startedAt, pausedAt, extraMin, status
+                  </td>
+                  <td>
+                    <code>focusMode</code>, <code>focusMinutes</code>,
+                    <code>secondsLeft</code>, …
+                  </td>
+                  <td>
+                    Local. Guardar <code>startedAt</code>, não um contador, para
+                    sobreviver ao app em background.
+                  </td>
+                </tr>
+                <tr>
+                  <td><b>DayRecord</b></td>
+                  <td>date, focusMinutes, recoveredMinutes, goalMet, releasesUsed[]</td>
+                  <td>Não existe (números fixos)</td>
+                  <td>Local; base do streak e das estatísticas</td>
+                </tr>
+                <tr>
+                  <td><b>Streak</b></td>
+                  <td>current, best, stage (nunca regride), lastGoalDate</td>
+                  <td><code>streak</code>, <code>stageForStreak()</code></td>
+                  <td>Derivado dos DayRecords</td>
+                </tr>
+                <tr>
+                  <td><b>Preferences</b></td>
+                  <td>name, reminderTime, milestoneAlerts, streakAlerts, theme</td>
+                  <td><code>dark</code>, SettingsRow</td>
+                  <td>Local</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section id="regras">
+          <span class="eyebrow">Implementação</span>
+          <h2>Regras de negócio</h2>
+          <div class="twocol">
+            <div class="box">
+              <h3>Streak e estágios</h3>
+              <ul>
+                <li>
+                  Meta diária ("regar"): pelo menos 25 min de foco no dia,
+                  <b>ou</b> passar o dia inteiro dos agendamentos ativos sem usar
+                  "Liberar por hoje". A meta padrão exibida é 2h recuperadas, ajustável.
+                </li>
+                <li>O dia vira à meia-noite no fuso do aparelho.</li>
+                <li>
+                  Estágios: 0 (dia 0) · 1 (1–6) · 2 (7–29) · 3 (30–59) · 4 (60–99) · 5
+                  (100+). O estágio <b>nunca regride</b>.
+                </li>
+                <li>
+                  Streak quebrado: <code>current</code> volta a 0; o estágio e a maior
+                  sequência ficam preservados. O Brotto só murcha, nunca morre.
+                </li>
+                <li>
+                  Ao cumprir a meta de novo, a animação vai de gotinhas para regado e
+                  depois para normal.
+                </li>
+              </ul>
+            </div>
+            <div class="box">
+              <h3>Bloqueio e monetização</h3>
+              <ul>
+                <li>Bloquear sempre em 1 toque.</li>
+                <li>
+                  Liberar por hoje libera só aquele app até a meia-noite e
+                  <b>não afeta</b> o streak.
+                </li>
+                <li>
+                  Sessão de foco junto com agendamento: vale a união das listas, e cada
+                  bloqueio termina no seu horário.
+                </li>
+                <li>
+                  Todas as features são pagas; o trial de 3 dias só vale no plano anual
+                  e vem ligado por padrão.
+                </li>
+                <li>
+                  O paywall só aparece depois de Impacto, Prova social e Permissões.
+                </li>
+                <li>
+                  Nenhuma falha técnica bloqueia o uso principal; usar dados locais
+                  quando possível.
+                </li>
+              </ul>
+            </div>
+          </div>
+          <div class="box">
+            <h3>Tom de voz</h3>
+            <p>
+              Leve, acolhedor e sem culpa. Nunca "você perdeu 6h"; sempre o que o
+              usuário ganha ou recupera. Linguagem jovem ("tá", "bora", "pra") e
+              vocabulário de planta (regar, crescer, florescer) sem exagero. Nenhum
+              vermelho em estatísticas.
+            </p>
+          </div>
+        </section>
+
+        <section id="gaps">
+          <span class="eyebrow">Implementação</span>
+          <h2>Spec × protótipo: o que ajustar</h2>
+          <p class="muted">
+            Pontos em que o protótipo diverge da spec ou tem comportamento que não deve
+            ser copiado para a implementação.
+          </p>
+          <div class="gaps">
+            <div class="gap bug">
+              <h3>Bugs de lógica no protótipo</h3>
+              <ul>
+                <li>
+                  Foco livre compartilha <code>focusMinutes</code> com o Pomodoro. Vindo
+                  de 25, o passo de 15 permite descer para 10, abaixo do mínimo de 15.
+                </li>
+                <li>
+                  "+5 min" aumenta <code>secondsLeft</code> mas não o total, então o
+                  anel passa de 100%.
+                </li>
+                <li>
+                  <code>confirmEnd</code> é o mesmo estado para "Encerrar foco" e
+                  "Liberar por hoje".
+                </li>
+                <li>
+                  O timer usa <code>setInterval</code>, que para em background. Na
+                  implementação, calcular a partir de <code>startedAt</code>.
+                </li>
+                <li>
+                  No Bloqueios, desligar o toggle de um app remove o app da lista.
+                </li>
+              </ul>
+            </div>
+            <div class="gap">
+              <h3>Dados fixos que precisam virar reais</h3>
+              <ul>
+                <li>Nome "Ana", "8h 40min", "12 dias", WaterBar em 50%</li>
+                <li>Pós-foco "+25 min" e "1h 25min"</li>
+                <li>Agendamento novo sempre salvo como "Seg a Sex 08:00–18:00"</li>
+                <li>Apps da P2 não pré-selecionam o Setup</li>
+                <li>Concluir o foco não soma no streak nem dispara a Celebração</li>
+              </ul>
+            </div>
+            <div class="gap">
+              <h3>Estados ausentes</h3>
+              <ul>
+                <li>Home: Dia 1 e Meta cumprida</li>
+                <li>Pausa do Pomodoro e avanço de ciclos</li>
+                <li>Permissão concedida (animação), Android 2/2, permissão revogada</li>
+                <li>Erros: pagamento, setup, salvar bloqueio, ativar foco</li>
+                <li>Paywall em modo limitado depois de fechar no X</li>
+                <li>Você: estado vazio e assinatura inativa</li>
+              </ul>
+            </div>
+            <div class="gap">
+              <h3>Interações ausentes</h3>
+              <ul>
+                <li>Busca e filtros de categoria no Bloqueios; bloqueio de sites</li>
+                <li>
+                  Seleção de dias, horários e apps no sheet de agendamento; "Usar
+                  sugestão"
+                </li>
+                <li>Swipe no carrossel; toque longo no logo</li>
+                <li>Toque no push levando à tela certa</li>
+                <li>Contagem animada no Impacto; morph e confete na Celebração</li>
+              </ul>
+            </div>
+            <div class="gap">
+              <h3>Diferenças de tokens</h3>
+              <ul>
+                <li>
+                  <code>--muted</code> no CSS é <code>#758077</code>; na spec,
+                  <code>#8A958C</code>. Provavelmente foi escurecido para passar em
+                  4.5:1. Manter o do CSS.
+                </li>
+                <li>h2 com 21px no CSS; spec pede 22px</li>
+                <li>Brotto lg com 210px no CSS; spec pede 220px</li>
+                <li>Botão central do Foco com 55px no CSS; spec pede 64pt</li>
+              </ul>
+            </div>
+            <div class="gap">
+              <h3>Conteúdo pendente</h3>
+              <ul>
+                <li>Nota na App Store e 3 depoimentos reais</li>
+                <li>Textos de Termos, Privacidade, Suporte e Sobre</li>
+                <li>
+                  Ícones reais dos apps; hoje são quadrados coloridos com a inicial
+                </li>
+                <li>
+                  Ilustração final do Brotto: o SVG atual é simplificado (folhas em
+                  elipse com filtro de aquarela) e sem as sobrancelhas, olhos de lado e
+                  caule curvado que a spec descreve por humor
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section id="nativo">
+          <span class="eyebrow">Implementação</span>
+          <h2>O que o protótipo não cobre</h2>
+          <p class="muted">
+            O protótipo é uma web app React 19 + Vite + Tailwind 4 sem backend. O
+            bloqueio real depende de APIs nativas que ele só simula.
+          </p>
+          <div class="twocol">
+            <div class="box">
+              <h3>iOS</h3>
+              <ul>
+                <li>
+                  Family Controls (entitlement pedido à Apple) com autorização
+                  <code>.individual</code>
+                </li>
+                <li>
+                  FamilyActivityPicker para escolher apps; devolve tokens, não nomes. A
+                  lista de 12 apps com nome do protótipo não é possível no iOS.
+                </li>
+                <li>
+                  ManagedSettings para aplicar o bloqueio; Shield Configuration
+                  Extension para a tela de bloqueio personalizada
+                </li>
+                <li>DeviceActivity Monitor Extension para agendamentos e sessões</li>
+                <li>StoreKit 2 para assinaturas e trial</li>
+              </ul>
+            </div>
+            <div class="box">
+              <h3>Android</h3>
+              <ul>
+                <li>
+                  UsageStatsManager (Acesso de uso) para detectar o app em primeiro
+                  plano
+                </li>
+                <li>
+                  AccessibilityService para interceptar e mostrar o overlay do Brotto; a
+                  Play Store exige justificativa para esse uso
+                </li>
+                <li>Foreground service para manter o timer e o bloqueio vivos</li>
+                <li>AlarmManager ou WorkManager para agendamentos</li>
+                <li>Play Billing para assinaturas</li>
+              </ul>
+            </div>
+          </div>
+          <div class="box">
+            <h3>Comum às duas plataformas</h3>
+            <ul>
+              <li>Notificações locais: lembrete diário, streak quebrado, marco</li>
+              <li>
+                Job à meia-noite local para fechar o DayRecord e recalcular o streak
+              </li>
+              <li>Analytics do funil de onboarding até a conversão no paywall</li>
+              <li>Haptics nas celebrações</li>
+            </ul>
+          </div>
+        </section>
+      </main>
+    </div>
+  </body>
+</html>
