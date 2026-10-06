@@ -73,6 +73,11 @@ O contrato detalhado, as APIs e a evidencia do Figma estao em
   execute Prettier no lockfile antes do commit para evitar ruido no diff.
 - `.prettierignore` ignora apenas `.claude/`, que contem configuracao local e
   nao pertence ao produto.
+- Nesta maquina, o Git de sistema usa `core.autocrlf=true`. Um checkout limpo
+  converte arquivos para CRLF e o Prettier 3 pode sinalizar o repositorio mesmo
+  quando `git status` esta limpo. Nao reformate todos os arquivos apenas para
+  ocultar esse efeito; formate e valide os arquivos editados ou trate a politica
+  de line endings em uma tarefa dedicada com `.gitattributes`.
 
 ## Fonte de design
 
@@ -138,7 +143,8 @@ npx expo-doctor
 ```
 
 `pnpm start`, comandos EAS, emuladores e builds nativos exigem autorizacao no
-momento da execucao.
+momento da execucao. No Windows atual, considere a observacao sobre CRLF antes
+de interpretar uma falha global de `format:check`.
 
 ## Orquestracao encerrada
 
