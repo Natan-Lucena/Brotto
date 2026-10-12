@@ -1,11 +1,5 @@
-export const onboardingSteps = [
-  'splash',
-  'boas-vindas',
-  'quiz',
-  'impacto',
-  'conheca',
-  'prova-social',
-  'permissoes',
-  'paywall',
-  'setup',
-] as const;
+export * from './impact';
+export * from './navigation';
+export * from './quiz';
+export * from './steps';
+export * from './store';

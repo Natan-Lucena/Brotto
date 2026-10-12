@@ -9,7 +9,40 @@ export interface FocusSessionRecord {
   mode: string;
   status: string;
 }
+export const appStateRepository = {
+  async get(key: string) {
+    const db = await getDatabase();
+    const row = await db.getFirstAsync<{ value: string }>(
+      'SELECT value FROM app_state WHERE key = ?',
+      key,
+    );
+    return row?.value ?? null;
+  },
+  async set(key: string, value: string) {
+    const db = await getDatabase();
+    await db.runAsync(
+      'INSERT OR REPLACE INTO app_state (key, value) VALUES (?, ?)',
+      key,
+      value,
+    );
+  },
+};
 export const blockedAppsRepository = {
+  async list(): Promise<SelectedApp[]> {
+    const db = await getDatabase();
+    const rows = await db.getAllAsync<{
+      id: string;
+      platform_ref: string;
+      label: string;
+      enabled: number;
+    }>('SELECT id, platform_ref, label, enabled FROM blocked_apps');
+    return rows.map((row) => ({
+      id: row.id,
+      platformRef: row.platform_ref,
+      label: row.label,
+      enabled: row.enabled === 1,
+    }));
+  },
   async replace(apps: SelectedApp[]) {
     const db = await getDatabase();
     await db.withTransactionAsync(async () => {
